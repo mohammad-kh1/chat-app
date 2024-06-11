@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 // Login And Register Routes
@@ -15,4 +16,8 @@ Route::middleware(["auth:sanctum"])->group(function () {
     Route::get("/dashboard", function () {
         return auth()->user();
     })->name("dashboard");
+    Route::get("/users", function () {
+        $users = User::whereNot("id", auth()->user()->id)->get();
+        return response()->json($users, 200);
+    });
 });

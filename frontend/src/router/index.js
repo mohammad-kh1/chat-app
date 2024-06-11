@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DashboardView from '../views/Auth/DashboardView.vue'
+import DashboardView from '../views/DashboardView.vue'
 import { base_url } from "../helper/base";
 import axios from 'axios';
 

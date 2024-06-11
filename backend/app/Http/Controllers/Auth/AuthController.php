@@ -21,6 +21,7 @@ class AuthController extends Controller
         if ($user) {
             $user = User::where("email", $data["email"])->first();
             if ($user->two_step_verification !== null) {
+                $user->notify(new SendOtpNotification());
                 return response()->json(["message" => "Please verify your email first"], 400);
             } else {
                 return response($user->createToken($user->name)->plainTextToken, 200);
@@ -53,6 +54,16 @@ class AuthController extends Controller
             return response($user->createToken($request->otp)->plainTextToken, 200);
         } else {
             return response()->json(["message" => "Invalid"], 400);
+        }
+    }
+    public function checkEmail(Request $request)
+    {
+
+        $email = User::where("email", $request->email)->first();
+        if ($email) {
+            return response()->json(["message" => "Email already exists"], 400);
+        } else {
+            return response()->json(["message" => "Email is available"], 200);
         }
     }
 }

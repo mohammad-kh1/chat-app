@@ -103,12 +103,12 @@
 
 <script setup>
 import { ref } from "vue";
-import { base_url } from "../helper/base";
-import Error from "../components/Error.vue";
-import Success from "../components/Success.vue";
+import { base_url } from "../../helper/base";
+import Error from "../../components/Error.vue";
+import Success from "../../components/Success.vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../stores/auth";
+import { useAuthStore } from "../../stores/auth";
 
 const name = ref("");
 const email = ref("");

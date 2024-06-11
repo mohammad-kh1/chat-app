@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import DashboardView from '../views/DashboardView.vue'
+import DashboardView from '../views/Auth/DashboardView.vue'
 import { base_url } from "../helper/base";
 import axios from 'axios';
 
@@ -12,17 +12,17 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/LoginView.vue')
+    component: () => import('../views/Auth/LoginView.vue')
   },
   {
     path: '/verification',
     name: 'Verification',
-    component: () => import('../views/VerifiyEmail.vue')
+    component: () => import('../views/Auth/VerifiyEmail.vue')
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('../views/RegisterView.vue')
+    component: () => import('../views/Auth/RegisterView.vue')
   }
 ];
 

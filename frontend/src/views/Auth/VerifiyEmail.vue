@@ -32,11 +32,11 @@
 
 <script setup>
 import { ref } from "vue";
-import { useAuthStore } from "../stores/auth";
-import { base_url } from "../helper/base";
+import { useAuthStore } from "../../stores/auth";
+import { base_url } from "../../helper/base";
 import axios from "axios";
-import Error from "../components/Error.vue";
-import Success from "../components/Success.vue";
+import Error from "../../components/Error.vue";
+import Success from "../../components/Success.vue";
 import { useRouter } from "vue-router";
 
 const auth = useAuthStore();

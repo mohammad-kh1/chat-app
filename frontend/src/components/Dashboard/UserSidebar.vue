@@ -8,8 +8,11 @@
       >
     </div>
     <div class="flex flex-col space-y-1 mt-4 -mx-2 h-auto overflow-y-auto">
-      <button v-for="user in users" :key="user.id"
+      <button
+        v-for="user in users"
+        :key="user.id"
         class="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2"
+        @click="Chat(user.id)"
       >
         <div
           class="flex items-center justify-center h-8 w-8 bg-indigo-200 rounded-full"
@@ -24,11 +27,38 @@
 
 
 <script setup>
+import { ref } from "vue";
+import { http } from "../../helper/base";
+
+const emits = defineEmits(["Chat"]);
+
+const messages = ref([]);
+
+const chat = () => {
+  emits("Chat", messages.value);
+  messages.value = [];
+}
+
+
 const props = defineProps({
   users: {
     type: Array,
     default: () => [],
     required: true,
   },
+  user: {
+    type: Object,
+    required: true,
+  },
 });
+
+const Chat = async (user_id) => {
+  const res = await http.post(`/chat`, {
+    sender_id: props.user.id,
+    receiver_id: user_id,
+  });
+
+  messages.value = res.data;
+  chat();
+};
 </script>

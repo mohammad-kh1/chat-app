@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\ChatController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -20,4 +21,6 @@ Route::middleware(["auth:sanctum"])->group(function () {
         $users = User::whereNot("id", auth()->user()->id)->get();
         return response()->json($users, 200);
     });
+
+    Route::post("/chat", [ChatController::class , "messages"])->name("chat");
 });

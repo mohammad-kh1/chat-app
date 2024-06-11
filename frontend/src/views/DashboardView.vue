@@ -6,7 +6,7 @@
 
         <UserCard :user="user" />
 
-        <UserSidebar :users="users" />
+        <UserSidebar :users="users" :user="user" @Chat="fetchMessages" />
       </div>
       <div v-if="messages !== null" class="flex flex-col flex-auto h-full p-6">
         <div
@@ -15,31 +15,36 @@
           <div class="flex flex-col h-full overflow-x-auto mb-4">
             <div class="flex flex-col h-full">
               <div class="grid grid-cols-12 gap-y-2">
-                <div class="col-start-1 col-end-8 p-3 rounded-lg">
-                  <div class="flex flex-row items-center">
+                <div
+                  v-for="message in messages"
+                  :key="message.id"
+                  :class="{
+                    'col-start-1': user.id !== message.sender_id,
+                    'col-start-6': user.id == message.sender_id,
+                    'col-end-8': user.id !== message.sender_id,
+                    'col-end-13': user.id === message.sender_id,
+                  }"
+                  class="p-3 rounded-lg"
+                >
+                  <div
+                    class="flex flex-row items-center "
+                    :class="{
+                      'justify-start': user.id == message.sender_id,
+                      'flex-row-reverse': user.id == message.sender_id,
+                    }"
+                  >
                     <div
                       class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
                     >
-                      A
+                      {{ message.sender_id == user.id ? user.name[0] : "b" }}
                     </div>
                     <div
-                      class="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl"
+                      class="relative ml-3 mr-2 text-smpy-2 px-4 shadow rounded-xl p-6 text-center"
+                      :class="{
+                        'bg-blue-600 text-white': user.id == message.sender_id,
+                      }"
                     >
-                      <div>Hey How are you today?</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-start-6 col-end-13 p-3 rounded-lg">
-                  <div class="flex items-center justify-start flex-row-reverse">
-                    <div
-                      class="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 flex-shrink-0"
-                    >
-                      A
-                    </div>
-                    <div
-                      class="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl"
-                    >
-                      <div>I'm ok what about you?</div>
+                      <div>{{ message.message }}</div>
                     </div>
                   </div>
                 </div>
@@ -121,13 +126,13 @@
           </div>
         </div>
       </div>
-      <div class="flex flex-col flex-auto h-full p-6 " v-else>
+      <div class="flex flex-col flex-auto h-full p-6" v-else>
         <div
           class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4"
         >
-        <div class="h-screen flex items-center justify-center ">
-          <h1 class="text-5xl">Welcome {{user.name}}</h1>
-        </div>
+          <div class="h-screen flex items-center justify-center">
+            <h1 class="text-5xl">Welcome {{ user.name }}</h1>
+          </div>
         </div>
       </div>
     </div>
@@ -146,9 +151,10 @@ const user = ref({});
 
 const messages = ref(null);
 
-const fetchMessages = async (e) => {
-  const res = await http.get(`/chat/${e.email}`);
-  messages.value = res.data;
+const fetchMessages = (message) => {
+  messages.value = [];
+  messages.value = message;
+  console.log(messages.value);
 };
 
 const fetchUser = async () => {

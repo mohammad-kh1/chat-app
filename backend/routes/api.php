@@ -43,4 +43,7 @@ Route::middleware(["auth:sanctum"])->group(function () {
     Route::post("/chat", [ChatController::class, "messages"])->name("chat");
     Route::get("/online_users", [ChatController::class, "online_users"])->name("online-users");
     Route::post("/online_users", [ChatController::class, "online_disconnetd"])->name("online_disconnetd");
+    Route::post("/send_message", [ChatController::class , "send_message"])->name("send_message");
 });
+
+Broadcast::routes(['middleware' => ['auth:sanctum']]);

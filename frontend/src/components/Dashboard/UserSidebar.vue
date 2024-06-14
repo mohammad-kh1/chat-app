@@ -60,6 +60,9 @@
 <script setup>
 import { ref } from "vue";
 import { http } from "../../helper/base";
+import { useChatStore } from "../../stores/chat";
+
+const chatStore = useChatStore();
 
 const emits = defineEmits(["chat"]);
 
@@ -70,7 +73,7 @@ const selected = ref(null);
 
 const chat = () => {
   emits("chat", messages.value);
-  console.log(props.onlineUsers);
+
   messages.value = [];
 };
 
@@ -92,10 +95,15 @@ const props = defineProps({
 
 const Chat = async (user_id) => {
   selected.value = user_id;
+  chatStore.$patch({
+    receiverId: user_id,
+  });
   const res = await http.post(`/chat`, {
     sender_id: props.user.id,
     receiver_id: user_id,
   });
+
+  
 
   messages.value = res.data;
   chat();

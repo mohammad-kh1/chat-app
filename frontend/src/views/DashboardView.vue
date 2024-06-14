@@ -17,7 +17,10 @@
         <div
           class="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4"
         >
-          <div class="flex flex-col h-full overflow-x-auto mb-4">
+          <div
+            class="flex flex-col h-full overflow-x-auto mb-4"
+            ref="messageContainer"
+          >
             <div class="flex flex-col h-full">
               <div class="grid grid-cols-12 gap-y-2">
                 <div
@@ -63,7 +66,53 @@
             </div>
           </div>
 
-          <MessageForm />
+          <div
+            class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4"
+          >
+            <div class="flex-grow ml-4">
+              <div class="relative w-full">
+                <input
+                  type="text"
+                  class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"
+                  v-model="message"
+                />
+                <button
+                  class="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600"
+                  @click="showEmojiPicker = !showEmojiPicker"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <EmojiPicker
+              :native="true"
+              v-if="showEmojiPicker == true"
+              @select="onSelectEmoji"
+            />
+
+            <div class="ml-4">
+              <button
+                class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0"
+                @click="sendMessage"
+              >
+                <span>Send</span>
+                <span class="ml-2"> </span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="flex flex-col flex-auto h-full p-6" v-else>
@@ -84,19 +133,68 @@ import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
 import Header from "../components/Dashboard/Header.vue";
 import UserCard from "../components/Dashboard/UserCard.vue";
 import UserSidebar from "../components/Dashboard/UserSidebar.vue";
-import MessageForm from "../components/Dashboard/MessageForm.vue";
-
+import { useChatStore } from "../stores/chat";
+import Echo from "laravel-echo";
+import Pusher from "pusher-js";
 import { http } from "../helper/base";
-import { ECHO } from "../helper/base";
+import axios from "axios";
+import EmojiPicker from "vue3-emoji-picker";
+import "vue3-emoji-picker/css";
+
+window.Echo = new Echo({
+  authEndpoint: "http://127.0.0.1:8000/broadcasting/auth",
+  broadcaster: "reverb",
+  key: "kg5wppgjso1uk6cv1dwb",
+  wsHost: "127.0.0.1",
+  wsPort: 8080,
+  wssPort: 8080,
+  forceTLS: ("http" ?? "https") === "https",
+  enabledTransports: ["ws", "wss"],
+  auth: {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+      Accept: "application/json",
+    },
+  },
+});
+
+const chatStore = useChatStore();
 
 const users = ref([]);
 const user = ref({});
 
-const messages = ref(null);
+const messages = ref([]);
 
 const online_users_id = ref([]);
 const onlineUsers = ref(new Set());
 
+const message = ref("");
+
+const messageContainer = ref(null);
+const showEmojiPicker = ref(false);
+
+const onSelectEmoji = (emoji) => {
+  message.value += emoji.i;
+};
+
+watch(messages, () => {
+  messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+});
+
+const sendMessage = () => {
+  http
+    .post(`/send_message`, {
+      sender_id: chatStore.senderId,
+      receiver_id: chatStore.receiverId,
+      message: message.value,
+    })
+    .then((res) => {
+      message.value = "";
+      messages.value.push(res.data);
+      messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+      showEmojiPicker.value = false;
+    });
+};
 
 const fetchMessages = (message) => {
   messages.value = [];
@@ -106,6 +204,9 @@ const fetchMessages = (message) => {
 const fetchUser = async () => {
   const res = await http.get("/dashboard");
   user.value = res.data;
+  chatStore.$patch({
+    senderId: user.value.id,
+  });
 };
 
 const fethcUsers = async () => {
@@ -114,12 +215,20 @@ const fethcUsers = async () => {
 };
 
 onMounted(() => {
-  ECHO.channel("online_users").listen("OnlineUsers", async () => {
+  window.Echo.channel("online_users").listen("OnlineUsers", async () => {
     const res = await http.get("/online_users");
     if (online_users_id.value.join() != res.data.join()) {
       online_users_id.value = res.data;
     }
   });
+
+  window.Echo.private(`chat.${chatStore.senderId}`).listen(
+    "MessageSent",
+    (res) => {
+      messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
+      messages.value.push(res.message);
+    }
+  );
 });
 
 watch(online_users_id, () => {

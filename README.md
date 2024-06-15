@@ -1,5 +1,4 @@
-# chat-app
-## A Real Time Chat Application written laravel 11  and vue js 3 and reverb
+# A Real Time Chat Application written laravel 11  and vue js 3 and reverb
 
 
 ### Sample

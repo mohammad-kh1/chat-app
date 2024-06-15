@@ -79,9 +79,12 @@ const login = async () => {
       login_status.value = 1;
       message.value = "Successfully Logged In";
       localStorage.setItem("token", res.data);
-      router.push({
+      setTimeout(() => {
+        router.push({
         name: "Dashboard",
       });
+      },1000)
+      
     })
     .catch((err) => {
       // If Wrong Credentials

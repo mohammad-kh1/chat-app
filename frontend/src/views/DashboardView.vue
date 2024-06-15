@@ -6,11 +6,7 @@
 
         <UserCard :user="user" />
 
-        <UserSidebar
-          :users="users"
-          :user="user"
-          @chat="fetchMessages"
-        />
+        <UserSidebar :users="users" :user="user" @chat="fetchMessages" />
       </div>
       <div v-if="messages !== null" class="flex flex-col flex-auto h-full p-6">
         <div
@@ -169,7 +165,6 @@ const message = ref("");
 const messageContainer = ref(null);
 const showEmojiPicker = ref(false);
 
-
 const onSelectEmoji = (emoji) => {
   message.value += emoji.i;
 };
@@ -199,7 +194,12 @@ const fetchMessages = (message) => {
 };
 
 const fetchUser = async () => {
-  const res = await http.get("/dashboard");
+  const res = await http.get("http://127.0.0.1:8000/api/dashboard", {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+      Accept: "application/json",
+    },
+  });
   user.value = res.data;
   chatStore.$patch({
     senderId: user.value.id,
@@ -207,11 +207,16 @@ const fetchUser = async () => {
 };
 
 const fethcUsers = async () => {
-  const res = await http.get("/users");
+  const res = await http.get("http://127.0.0.1:8000/api/users", {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+      Accept: "application/json",
+    },
+  });
   users.value = res.data;
 };
 
-onMounted(() => {
+onMounted(async () => {
   window.Echo.private(`chat.${chatStore.senderId}`).listen(
     "MessageSent",
     (res) => {

@@ -19,10 +19,10 @@ class OnlineUsers implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public $users;
-    public function __construct(User $users)
+    public $user;
+    public function __construct(User $user)
     {
-        $this->users = $users;
+        $this->user = $user;
     }
 
     /**
@@ -33,7 +33,7 @@ class OnlineUsers implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel('online_users'),
+            new PresenceChannel("online_users"),
         ];
     }
 }

@@ -4,16 +4,13 @@
       <span class="font-bold">Online Users</span
       ><span
         class="flex items-center justify-center bg-gray-300 h-4 w-4 rounded-full"
-        >{{ onlineUsers.size }}</span
       >
+        {{ online_users.length }}
+      </span>
     </div>
-    <div
-      v-if="onlineUsers.size > 0"
-      class="flex flex-col space-y-1 mt-4 -mx-2 h-auto overflow-y-auto"
-    >
+    <div class="flex flex-col space-y-1 mt-4 -mx-2 h-auto overflow-y-auto">
       <button
-        v-for="user in onlineUsers"
-        :key="user.id"
+        v-for="user in online_users"
         :id="user.id"
         class="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2"
         :class="{ 'bg-gray-200': user.id === selected }"
@@ -58,7 +55,7 @@
 
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { http } from "../../helper/base";
 import { useChatStore } from "../../stores/chat";
 
@@ -87,10 +84,27 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  onlineUsers: {
-    type: Set,
-    required: false,
-  },
+});
+const online_users = ref([]);
+
+onMounted(() => {
+  window.Echo.join(`online_users`)
+    .here((users) => {
+      users.forEach((user) => {
+        if (user.id != chatStore.senderId) {
+          online_users.value .push(user);
+        }
+      });
+    })
+    .leaving((user) => {
+      const index = online_users.value.findIndex((u) => u.id === user.id);
+      if (index !== -1) {
+        online_users.value.splice(index, 1);
+      }
+    })
+    .joining((user) => {
+      online_users.value.push(user);
+    });
 });
 
 const Chat = async (user_id) => {
@@ -102,8 +116,6 @@ const Chat = async (user_id) => {
     sender_id: props.user.id,
     receiver_id: user_id,
   });
-
-  
 
   messages.value = res.data;
   chat();

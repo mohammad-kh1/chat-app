@@ -10,7 +10,6 @@
           :users="users"
           :user="user"
           @chat="fetchMessages"
-          :onlineUsers="onlineUsers"
         />
       </div>
       <div v-if="messages !== null" class="flex flex-col flex-auto h-full p-6">
@@ -165,13 +164,11 @@ const user = ref({});
 
 const messages = ref([]);
 
-const online_users_id = ref([]);
-const onlineUsers = ref(new Set());
-
 const message = ref("");
 
 const messageContainer = ref(null);
 const showEmojiPicker = ref(false);
+
 
 const onSelectEmoji = (emoji) => {
   message.value += emoji.i;
@@ -215,13 +212,6 @@ const fethcUsers = async () => {
 };
 
 onMounted(() => {
-  window.Echo.channel("online_users").listen("OnlineUsers", async () => {
-    const res = await http.get("/online_users");
-    if (online_users_id.value.join() != res.data.join()) {
-      online_users_id.value = res.data;
-    }
-  });
-
   window.Echo.private(`chat.${chatStore.senderId}`).listen(
     "MessageSent",
     (res) => {
@@ -229,18 +219,6 @@ onMounted(() => {
       messages.value.push(res.message);
     }
   );
-});
-
-watch(online_users_id, () => {
-  online_users_id.value.forEach((onlineUserId) => {
-    users.value.forEach((user) => {
-      if (user.id == onlineUserId) {
-        try {
-          onlineUsers.value.add(user);
-        } catch (e) {}
-      }
-    });
-  });
 });
 
 onBeforeMount(async () => {

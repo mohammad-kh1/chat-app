@@ -19,19 +19,7 @@ Route::post("/check-email", [AuthController::class, "checkEmail"])->name("check-
 Route::middleware(["auth:sanctum"])->group(function () {
     Route::get("/dashboard", function () {
         $user = auth()->user();
-
-        // Fetch the list of online users from Redis
-        $onlineUsers = Redis::lrange("online_users", 0, -1);
-
-        // Convert the fetched list to an array
-        $onlineUsersArray = json_decode(json_encode($onlineUsers), true);
-
-        // Check if the user's ID is in the list of online users
-        if (!in_array($user->id, $onlineUsersArray)) {
-            // If not, add the user's ID to the list
-            Redis::rpush("online_users", $user->id);
-        }
-
+        $user->is_online = ($user->is_online == false) ? true : true;
         OnlineUsers::dispatch($user);
         return $user;
     })->name("dashboard");
@@ -43,7 +31,5 @@ Route::middleware(["auth:sanctum"])->group(function () {
     Route::post("/chat", [ChatController::class, "messages"])->name("chat");
     Route::get("/online_users", [ChatController::class, "online_users"])->name("online-users");
     Route::post("/online_users", [ChatController::class, "online_disconnetd"])->name("online_disconnetd");
-    Route::post("/send_message", [ChatController::class , "send_message"])->name("send_message");
+    Route::post("/send_message", [ChatController::class, "send_message"])->name("send_message");
 });
-
-Broadcast::routes(['middleware' => ['auth:sanctum']]);

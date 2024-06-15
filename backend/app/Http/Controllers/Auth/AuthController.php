@@ -24,6 +24,7 @@ class AuthController extends Controller
                 $user->notify(new SendOtpNotification());
                 return response()->json(["message" => "Please verify your email first"], 400);
             } else {
+                $user->is_online = true;
                 return response($user->createToken($user->name)->plainTextToken, 200);
             }
         } else {
@@ -51,6 +52,7 @@ class AuthController extends Controller
         $user = User::where("two_step_verification", $request->otp)->first();
         if ($user) {
             $user->update(["two_step_verification" => null]);
+            $user->is_online = true;
             return response($user->createToken($request->otp)->plainTextToken, 200);
         } else {
             return response()->json(["message" => "Invalid"], 400);

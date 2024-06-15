@@ -70,6 +70,7 @@
                   type="text"
                   class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"
                   v-model="message"
+                  @keypress.enter="sendMessage"
                 />
                 <button
                   class="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600"
@@ -131,10 +132,10 @@ import UserSidebar from "../components/Dashboard/UserSidebar.vue";
 import { useChatStore } from "../stores/chat";
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
-import { http } from "../helper/base";
 import axios from "axios";
 import EmojiPicker from "vue3-emoji-picker";
 import "vue3-emoji-picker/css";
+import {base_url} from "../helper/base";
 
 window.Echo = new Echo({
   authEndpoint: "http://127.0.0.1:8000/broadcasting/auth",
@@ -151,6 +152,12 @@ window.Echo = new Echo({
       Accept: "application/json",
     },
   },
+});
+const http = axios.create({
+    baseURL: base_url,
+    headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
 });
 
 const chatStore = useChatStore();

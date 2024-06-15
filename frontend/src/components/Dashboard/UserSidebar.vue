@@ -56,8 +56,9 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { http } from "../../helper/base";
 import { useChatStore } from "../../stores/chat";
+import {base_url} from "../../helper/base";
+import axios from "axios";
 
 const chatStore = useChatStore();
 
@@ -87,12 +88,19 @@ const props = defineProps({
 });
 const online_users = ref([]);
 
+const http = axios.create({
+  baseURL: base_url,
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});
+
 onMounted(() => {
   window.Echo.join(`online_users`)
     .here((users) => {
       users.forEach((user) => {
         if (user.id != chatStore.senderId) {
-          online_users.value .push(user);
+          online_users.value.push(user);
         }
       });
     })
